@@ -1,0 +1,72 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <script type="text/javascript" src="./qwebchannel.js"></script>
+        <script type="text/javascript">
+            //BEGIN SETUP
+            window.onload = function()
+            {
+                output("设置QWebChannel...");
+                new QWebChannel(qt.webChannelTransport, function(channel)
+                {
+                    //content是qt的接口对象
+                    var content = channel.objects.document;//channel.objects是固有的，不用改，后面的document是在MainWidget种注册的对象名
+
+                    output("连接到WebChannel, 准备好发送和接受信息!");
+					//调用qt端的槽函数receiveText，相当于把消息发送到qt端
+                    content.receiveText("网页客户端已连接, 准备好发送和接受信息!");
+
+                    //将qt端的信号textSent连接到网页端输出
+                    content.textSent.connect(function(message)
+                    {
+                        output("收到信息: " + message);
+                    });
+					
+                    //单击"发送"按钮，发送消息到qt端
+                    document.getElementById("send").onclick = function()
+                    {
+                        var input = document.getElementById("input");
+                        var text = input.value;
+                        if (!text)
+                        {
+                            return;
+                        }
+                        output("发送信息: " + text);
+                        input.value = "";
+                        //调用qt端的槽函数receiveText，相当于把消息发送到qt端
+                        content.receiveText(text);
+                    }					
+                });
+            }
+            function output(message)
+            {
+                var output = document.getElementById("output");
+                output.innerHTML = output.innerHTML + message + "\n";
+            }
+            //END SETUP
+        </script>
+        <style type="text/css">
+            html {
+                height: 100%;
+                width: 100%;
+            }
+            #input {
+                width: 400px;
+                margin: 0 10px 0 0;
+            }
+            #send {
+                width: 90px;
+                margin: 0;
+            }
+            #output {
+                width: 500px;
+                height: 300px;
+            }
+        </style>
+    </head>
+    <body>
+        <textarea id="output"></textarea><br />
+        <input id="input" /><input type="submit" id="send" value="发送" onclick="javascript:click();" />
+    </body>
+</html>
